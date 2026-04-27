@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ThetaTrack V6 | Unified Sandbox Engine</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#09090f;--surf:#111118;--card:#15151e;--card2:#1a1a25;
+  --bdr:rgba(255,255,255,0.12);--bhi:rgba(255,255,255,0.22);
+  --txt:#ffffff;--mut:#aaaacc;
+  --cyan:#00d4ff;--red:#ff4d4d;--gold:#ffd700;--green:#00d9a0;--purple:#9b8fff;--amber:#ffb347;
+  --mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+}
+body{background:var(--bg); color:var(--txt); font-family:var(--sans); padding: 20px; display: flex; justify-content: center;}
+#tt{width: 100%; max-width: 1200px; background:var(--bg); padding:16px; border-radius:12px;}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:.5px solid var(--bdr);}
+.logo{display:flex;align-items:center;gap:9px;}
+.lmark{width:30px;height:30px;background:linear-gradient(135deg,var(--purple),var(--cyan));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;}
+.lt{font-size:16px;font-weight:600;color:#fff;}
+.ls{font-size:9px;color:var(--mut);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+
+/* V5 Badge Styles */
+.hbadge{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);padding: 4px 10px; border-radius: 4px; font-weight:bold;}
+.b-safe{background: rgba(0, 217, 160, 0.15); color: var(--green); border: 1px solid var(--green);}
+.b-danger{background: rgba(255, 77, 77, 0.15); color: var(--red); border: 1px solid var(--red); animation: pulse 2s infinite;}
+@keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(255,77,77,0.4);} 70% {box-shadow: 0 0 0 6px rgba(255,77,77,0);} 100% {box-shadow: 0 0 0 0 rgba(255,77,77,0);} }
+
+.nav{display:flex;gap:6px;margin-bottom:14px;}
+.ntab{padding:6px 14px;border-radius:6px;font-size:11px;font-family:var(--mono);font-weight:500;cursor:pointer;border:.5px solid rgba(255,255,255,0.25);background:transparent;color:#ffffff;transition:all .15s;letter-spacing:.5px;text-transform:uppercase;}
+.ntab.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+.ntab:hover:not(.active){background:rgba(255,255,255,0.08);color:#fff;}
+
+.view{display:none;}
+.view.show{display:block;}
+
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
+.panel{background:var(--card);border:.5px solid var(--bdr);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:9px;}
+.plbl{font-size:10px;font-family:var(--mono);letter-spacing:1.2px;text-transform:uppercase;color:#ffffff;font-weight:600;}
+
+/* V5 Mode Toggle */
+.mode-toggle{display: flex; gap: 5px; background: #0b0b13; padding: 4px; border-radius: 6px; border: 1px solid var(--bdr);}
+.mode-btn{flex:1; padding: 6px; border:none; background:transparent; color:#888; font-family:var(--mono); font-size:10px; font-weight:700; cursor:pointer; border-radius: 4px; transition: .2s;}
+.mode-btn.active{background: rgba(255,255,255,0.1); color: #fff;}
+
+.lang-row{display:flex;gap:5px;flex-wrap:wrap;}
+.lang-btn{padding:5px 13px;border-radius:5px;font-size:11px;font-family:var(--mono);font-weight:700;cursor:pointer;border:.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.06);color:#ffffff;transition:all .12s;letter-spacing:.3px;}
+.lang-btn.sel{border-color:var(--cyan); background:rgba(0, 212, 255, 0.15); color:#fff;}
+
+.editor-box{flex:1;display:flex;flex-direction:column;border:.5px solid var(--bhi);border-radius:7px;overflow:hidden;min-height:200px;}
+.ebar{background:rgba(255,255,255,0.06);padding:6px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--bdr);}
+.efname{font-family:var(--mono);font-size:10px;color:#ffffff;letter-spacing:.6px;}
+textarea.code{flex:1;background:#0b0b13;color:#e8e8ff;font-family:var(--mono);font-size:12px;line-height:1.65;border:none;outline:none;padding:10px 12px;resize:none;tab-size:2;}
+
+.nrow{display:flex;align-items:center;gap:8px;}
+.nlbl{font-size:11px;font-family:var(--mono);color:#ffffff;width:52px;flex-shrink:0;}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:rgba(255,255,255,0.2);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--cyan);cursor:pointer;border:2px solid #fff;}
+input[type=range]:disabled{opacity:0.3;cursor:not-allowed;}
+.nv{font-family:var(--mono);font-size:11px;min-width:42px;text-align:right;color:#ffffff;font-weight:600;}
+
+.btn-row{display:flex; gap: 8px;}
+.action-btn{flex: 1; padding:11px; border:none; border-radius:7px; color:#fff; font-family:var(--sans); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .14s;}
+.action-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-run{background:var(--purple);} .btn-run:hover:not(:disabled){background:#8070ff;transform:translateY(-1px);}
+.btn-debug{background:#334155; border: 1px solid #475569;} .btn-debug:hover:not(:disabled){background:#475569;transform:translateY(-1px);}
+.btn-save{background:var(--green); color:#000; display: none;} .btn-save:hover:not(:disabled){background:#00e6a8;transform:translateY(-1px);}
+
+.right-panels{display:flex;flex-direction:column;gap:10px;}
+.chart-panel{background:var(--card);border:.5px solid var(--bdr);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.chdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+.ctitle{font-size:13px;font-weight:600;color:#fff;}
+.leg-row{display:flex;gap:12px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;font-family:var(--mono);color:#ffffff;}
+.ldot{width:8px;height:8px;border-radius:2px;}
+.cwrap{position:relative;height:180px;}
+
+.output-panel{background:var(--card);border:.5px solid var(--bdr);border-radius:9px;padding:0;overflow:hidden;}
+.otabs{display:flex;border-bottom:.5px solid var(--bdr);}
+.otab{padding:7px 14px;font-size:11px;font-family:var(--mono);cursor:pointer;color:#aaaacc;border-bottom:2px solid transparent;background:transparent;border-top:none;border-left:none;border-right:none;font-weight:500;}
+.otab.on{color:#ffffff;border-bottom-color:var(--cyan);}
+
+.opane{display:none;padding:10px 12px;}
+.opane.on{display:block;}
+.term{font-family:var(--mono);font-size:11px;line-height:1.75;height:140px;overflow-y:auto;background:#0b0b13;border-radius:4px;padding:8px;}
+.tc{color:var(--cyan);}.tg{color:var(--gold);}.tr{color:var(--red);}.tm{color:#ccccdd;}.tgr{color:var(--green);}.tdebug{color:#ff9cd6;}
+
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.acard{background:var(--surf);border:.5px solid var(--bdr);border-radius:6px;padding:8px 10px;}
+.albl{font-size:10px;font-family:var(--mono);text-transform:uppercase;color:#aaaacc;margin-bottom:4px;font-weight:600;}
+.aval{font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;}
+
+.hist-view{display:flex;flex-direction:column;gap:10px;}
+.hist-toolbar{display:flex;align-items:center;justify-content:space-between;}
+.clr-btn{padding:6px 14px;border:.5px solid rgba(255,77,77,0.4);border-radius:5px;background:transparent;color:#ff7070;font-family:var(--mono);font-size:11px;cursor:pointer;}
+.hist-list{display:flex;flex-direction:column;gap:7px;max-height:500px;overflow-y:auto;}
+.hitem{background:var(--card);border:.5px solid var(--bdr);border-radius:8px;padding:12px; display: flex; justify-content: space-between; align-items: center;}
+.hmeta{display:flex;gap:6px;flex-wrap:wrap;}
+.hactions{display: flex; gap: 8px;}
+.hbtn{padding: 6px 12px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none;}
+.hbtn-run{background: rgba(0, 212, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 212, 255, 0.3);}
+.hbtn-del{background: rgba(255, 77, 77, 0.1); color: var(--red); border: 1px solid rgba(255, 77, 77, 0.3);}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<div id="tt">
+  <div class="hdr">
+    <div class="logo">
+      <div class="lmark">Θ</div>
+      <div>
+        <div class="lt">ThetaTrack V6</div>
+        <div class="ls">Unified Sandbox Engine</div>
+      </div>
+    </div>
+    <div class="hbadge b-safe" id="statusBadge">Sandbox Ready</div>
+  </div>
+
+  <div class="nav">
+    <button class="ntab active" onclick="showView('lab')">Workspace</button>
+    <button class="ntab" onclick="showView('hist')">History <span id="histCount" style="background:var(--purple);color:#fff;padding:1px 6px;border-radius:3px;font-size:9px;margin-left:3px;">0</span></button>
+  </div>
+
+  <div id="vLab" class="view show">
+    <div class="two-col">
+      <div class="panel">
+        
+        <div class="plbl">Compiler Language</div>
+        <div class="lang-row">
+          <button class="lang-btn sel" data-lang="js" onclick="setLang('js',this)">JS</button>
+          <button class="lang-btn" data-lang="py" onclick="setLang('py',this)">Python</button>
+          <button class="lang-btn" data-lang="c" onclick="setLang('c',this)">C</button>
+          <button class="lang-btn" data-lang="cpp" onclick="setLang('cpp',this)">C++</button>
+          <button class="lang-btn" data-lang="java" onclick="setLang('java',this)">Java</button>
+        </div>
+
+        <div class="plbl">Execution Engine Mode</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="btnPoly" onclick="setMode('poly')">Polynomial (N up to 8k)</button>
+          <button class="mode-btn" id="btnNP" onclick="setMode('np')">Non-Polynomial (N clamped to 28)</button>
+        </div>
+
+        <div class="editor-box">
+          <div class="ebar">
+            <span class="efname" id="fname">algorithm.js</span>
+          </div>
+          <textarea class="code" id="codeIn" spellcheck="false">
+// Default Polynomial: O(N^2)
+let sum = 0;
+for (let i = 0; i < n; i++) {
+  for (let j = 0; j < n; j++) {
+    sum += i * j;
+  }
+}
+return sum;</textarea>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="nrow">
+            <span class="nlbl">Max N</span>
+            <input type="range" id="nSlider" min="500" max="8000" step="500" value="3000">
+            <span class="nv" id="nDisp">3,000</span>
+          </div>
+          <div class="nrow">
+            <span class="nlbl">Samples</span>
+            <input type="range" id="sSlider" min="4" max="12" step="1" value="8">
+            <span class="nv" id="sDisp">8</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="action-btn btn-debug" id="debugBtn" onclick="runDebug()">🛠 Run & Debug</button>
+          <button class="action-btn btn-run" id="runBtn" onclick="runBench()">▶ Execute Benchmark</button>
+        </div>
+        <button class="action-btn btn-save" id="saveBtn" onclick="commitSave()">💾 Save to History</button>
+      </div>
+
+      <div class="right-panels">
+        <div class="chart-panel">
+          <div class="chdr">
+            <div class="ctitle">Time Complexity Graph</div>
+            <div id="detBadge" style="display:none;padding:2px 9px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;"></div>
+          </div>
+          <div class="leg-row">
+            <div class="leg"><div class="ldot" style="background:var(--cyan)"></div>Θ(N) Ref</div>
+            <div class="leg"><div class="ldot" style="background:var(--red)"></div>Θ(N²) Ref</div>
+            <div class="leg"><div class="ldot" style="background:var(--gold)"></div>Sandbox Worker</div>
+          </div>
+          <div class="cwrap"><canvas id="ttChart"></canvas></div>
+        </div>
+
+        <div class="output-panel">
+          <div class="otabs">
+            <button class="otab on" onclick="showOTab('terminal',this)">Terminal</button>
+            <button class="otab" onclick="showOTab('analysis',this)">Analysis Dashboard</button>
+          </div>
+          <div id="oTerminal" class="opane on">
+            <div class="term" id="termOut">
+              <span class="tc">[SYS]</span> <span class="tm">ThetaTrack V6 Initialized. Web Worker Sandbox Ready.</span><br>
+            </div>
+          </div>
+          <div id="oAnalysis" class="opane">
+            <div class="analysis-grid">
+              <div class="acard">
+                <div class="albl">Time complexity</div>
+                <div class="aval" id="aTime" style="color:var(--gold)">—</div>
+              </div>
+              <div class="acard">
+                <div class="albl">Space complexity</div>
+                <div class="aval" id="aSpace" style="color:var(--cyan)">O(1)</div>
+              </div>
+              <div class="acard">
+                <div class="albl">Peak exec time</div>
+                <div class="aval" id="aPeak" style="color:var(--red)">—</div>
+              </div>
+              <div class="acard">
+                <div class="albl">vs linear ratio</div>
+                <div class="aval" id="aRatio" style="color:var(--green)">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vHist" class="view">
+    <div class="hist-view">
+      <div class="hist-toolbar">
+        <span style="font-size:12px;color:#fff;font-family:var(--mono);" id="hCountLbl">0 saved</span>
+        <button class="clr-btn" onclick="clearHist()">🗑 Delete All History</button>
+      </div>
+      <div class="hist-list" id="histList">
+        <div style="text-align:center;padding:40px;color:#aaaacc;font-size:12px;font-family:var(--mono);">No benchmarks saved yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let chart=null, curLang='js', history=[], pendingSaveData=null;
+let engineMode = 'poly';
+let worker = null;
+
+const nSlider=document.getElementById('nSlider'), sSlider=document.getElementById('sSlider');
+nSlider.oninput=()=>document.getElementById('nDisp').textContent=(+nSlider.value).toLocaleString();
+sSlider.oninput=()=>document.getElementById('sDisp').textContent=sSlider.value;
+
+function showView(v){
+  document.getElementById('vLab').classList.toggle('show',v==='lab');
+  document.getElementById('vHist').classList.toggle('show',v==='hist');
+  document.querySelectorAll('.ntab').forEach((t,i)=>t.classList.toggle('active',(i===0&&v==='lab')||(i===1&&v==='hist')));
+}
+
+function showOTab(tab,btn){
+  document.getElementById('oTerminal').classList.toggle('on',tab==='terminal');
+  document.getElementById('oAnalysis').classList.toggle('on',tab==='analysis');
+  document.querySelectorAll('.otab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function setLang(lang,btn){
+  curLang=lang;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  const ex = {js:'algorithm.js',py:'algorithm.py',c:'algorithm.c',cpp:'algorithm.cpp',java:'Algorithm.java'};
+  document.getElementById('fname').textContent=ex[lang];
+}
+
+function setMode(m) {
+  engineMode = m;
+  document.getElementById('btnPoly').classList.toggle('active', m==='poly');
+  document.getElementById('btnNP').classList.toggle('active', m==='np');
+  
+  const badge = document.getElementById('statusBadge');
+  if(m === 'np') {
+    badge.className = 'hbadge b-danger';
+    badge.innerText = '⚠️ NP Mode: Kill-Switch Engaged';
+    nSlider.disabled = true; sSlider.disabled = true;
+    document.getElementById('nDisp').innerText = "Max 28 (Locked)";
+    document.getElementById('sDisp').innerText = "Fixed";
+  } else {
+    badge.className = 'hbadge b-safe';
+    badge.innerText = 'Sandbox Ready';
+    nSlider.disabled = false; sSlider.disabled = false;
+    document.getElementById('nDisp').innerText = (+nSlider.value).toLocaleString();
+    document.getElementById('sDisp').innerText = sSlider.value;
+  }
+}
+
+function tlog(msg,cls='tm'){
+  const t=document.getElementById('termOut');
+  t.innerHTML+=`<span class="tc">[SYS]</span> <span class="${cls}">${msg}</span><br>`;
+  t.scrollTop=t.scrollHeight;
+}
+
+function runDebug(){
+  const code=document.getElementById('codeIn').value.trim();
+  if(!code) return;
+  showOTab('terminal', document.querySelectorAll('.otab')[0]);
+  tlog(`--- Debug Run (N=5) ---`, 'tc');
+  const orgLog = console.log; let cap = false;
+  console.log = (...args) => { cap=true; tlog(`> ${args.join(' ')}`, 'tdebug'); };
+  try { const fn=new Function('n',code); const res=fn(5); if(!cap) tlog('(No console.log output)','tm'); tlog(`Returned: ${res}`,'tgr'); }
+  catch(e){ tlog(`Error: ${e.message}`, 'tr'); }
+  finally { console.log = orgLog; }
+}
+
+const linearRef=(n)=>{let s=0;for(let i=0;i<n;i++)s+=i;return s;};
+const quadRef=(n)=>{const m=Math.min(n,1800);let s=0;for(let i=0;i<m;i++)for(let j=0;j<m;j++)s+=i;return s;};
+
+function detectComplexity(pts){
+  if(pts.length<3)return{tc:'?',slope:1};
+  const xs=pts.map(p=>Math.log(p.x)), ys=pts.map(p=>Math.log(Math.max(p.y,0.0001)));
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  const slope=xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0)/xs.reduce((s,x)=>s+(x-mx)**2,0);
+  let tc = slope<0.2?'Θ(1)':slope<0.55?'Θ(log N)':slope<0.85?'Θ(√N)':slope<1.3?'Θ(N)':slope<1.7?'Θ(N log N)':slope<2.4?'Θ(N²)':slope<3.1?'Θ(N³)':slope<4.0?'Θ(2ⁿ)':'Θ(N!)';
+  return{tc,slope:Math.round(slope*100)/100};
+}
+
+async function runBench(){
+  const code=document.getElementById('codeIn').value.trim();
+  if(!code)return;
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true; btn.innerText="Executing Worker...";
+  document.getElementById('saveBtn').style.display='none';
+  showOTab('terminal', document.querySelectorAll('.otab')[0]);
+
+  let ns = [];
+  if(engineMode === 'poly') {
+    const maxN = +nSlider.value, smps = +sSlider.value;
+    const step = Math.floor(maxN/smps);
+    ns = Array.from({length:smps},(_,i)=>step*(i+1));
+  } else {
+    ns = [2, 5, 10, 15, 20, 22, 24, 25, 26, 27, 28]; // Clamped safe-range for NP
+  }
+
+  tlog(`Booting Sandbox Worker Thread... [Mode: ${engineMode.toUpperCase()}]`,'tg');
+
+  const workerCode = `
+    self.onmessage = function(e) {
+      const { nValues, codeStr } = e.data;
+      let results = [];
+      try {
+        const userFn = new Function('n', codeStr);
+        for(let n of nValues) {
+          const t0 = performance.now();
+          userFn(n);
+          results.push({ x: n, y: parseFloat((performance.now() - t0).toFixed(4)) });
+        }
+        self.postMessage({ status: 'success', data: results });
+      } catch (err) {
+        self.postMessage({ status: 'error', error: err.message });
+      }
+    };
+  `;
+
+  // Wrap worker in a Promise
+  const executeThread = new Promise((resolve, reject) => {
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    if(worker) worker.terminate();
+    worker = new Worker(URL.createObjectURL(blob));
+
+    const killTimer = setTimeout(() => {
+      worker.terminate();
+      reject(new Error("Timeout! Web Worker Terminated. Execution exceeded 3.5s limit."));
+    }, 3500);
+
+    worker.onmessage = (e) => {
+      clearTimeout(killTimer);
+      if(e.data.status === 'error') reject(new Error(e.data.error));
+      else resolve(e.data.data);
+    };
+    worker.postMessage({ nValues: ns, codeStr: code });
+  });
+
+  let userPts = [];
+  try {
+    userPts = await executeThread;
+  } catch (err) {
+    tlog(`CRITICAL: ${err.message}`, 'tr');
+    btn.disabled=false; btn.innerText="▶ Execute Benchmark";
+    return; // Halt plotting
+  }
+
+  // Calculate references on main thread (safe)
+  const linPts=[], quadPts=[];
+  for(let n of ns){
+    const t0=performance.now(); linearRef(n); linPts.push({x:n,y:(performance.now()-t0)});
+    const t1=performance.now(); quadRef(Math.min(n,1800)); quadPts.push({x:n,y:(performance.now()-t1)});
+  }
+
+  const {tc} = detectComplexity(userPts);
+  const peakUser = Math.max(...userPts.map(p=>p.y));
+  const ratio = Math.max(...linPts.map(p=>p.y))>0 ? (peakUser/Math.max(...linPts.map(p=>p.y))).toFixed(1)+'x' : '—';
+
+  tlog('Worker thread finished safely. Analyzing telemetry.','tw');
+  document.getElementById('aTime').textContent=tc;
+  document.getElementById('aPeak').textContent=peakUser.toFixed(2)+'ms';
+  document.getElementById('aRatio').textContent=ratio;
+
+  renderChart(linPts, quadPts, userPts);
+  
+  pendingSaveData = {lang:curLang, code, tc, peak:peakUser.toFixed(2), maxN: Math.max(...ns), ts:new Date().toLocaleTimeString()};
+  
+  btn.disabled=false; btn.innerText="▶ Execute Benchmark";
+  document.getElementById('saveBtn').style.display='flex';
+  showOTab('analysis', document.querySelectorAll('.otab')[1]);
+}
+
+function commitSave() {
+  if(pendingSaveData) {
+    history.unshift(pendingSaveData);
+    document.getElementById('histCount').textContent=history.length;
+    document.getElementById('hCountLbl').textContent=`${history.length} saved benchmarks`;
+    renderHistory();
+    tlog(`Benchmark saved to history successfully.`, 'tgr');
+    document.getElementById('saveBtn').style.display = 'none';
+    pendingSaveData = null;
+  }
+}
+
+function renderChart(lp,qp,up){
+  if(chart) chart.destroy();
+  const ctx=document.getElementById('ttChart').getContext('2d');
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{datasets:[
+      {label:'Θ(N)',data:lp,borderColor:'#00d4ff',borderWidth:1.5,pointRadius:0,tension:.3,borderDash:[4,3]},
+      {label:'Θ(N²)',data:qp,borderColor:'#ff4d4d',borderWidth:1.5,pointRadius:0,tension:.3,borderDash:[6,3]},
+      {label:'Worker',data:up,borderColor:'#ffd700',backgroundColor:'rgba(255,215,0,0.1)',borderWidth:3,pointRadius:4,fill:true,tension:.3},
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'linear',grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function renderHistory(){
+  const el=document.getElementById('histList');
+  if(history.length===0){ el.innerHTML='<div style="text-align:center;padding:40px;color:#aaaacc;font-size:12px;font-family:var(--mono);">No benchmarks saved yet.</div>'; return;}
+  
+  el.innerHTML=history.map((h,i)=>{
+    const prev=h.code.split('\n').slice(0,2).join('\n');
+    return `<div class="hitem">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:6px;">${h.ts} — N=${h.maxN}</div>
+        <div class="hmeta">
+          <span class="hbadge" style="background:rgba(255,255,255,0.1);color:#fff;">${h.lang.toUpperCase()}</span>
+          <span class="hbadge" style="background:rgba(255,215,0,0.2);color:var(--gold);">${h.tc}</span>
+          <span class="hbadge" style="background:rgba(255,77,77,.15);color:#fff;">${h.peak}ms</span>
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:#aaaacc;margin-top:8px;">${prev.replace(/</g,'&lt;')}</div>
+      </div>
+      <div class="hactions">
+        <button class="hbtn hbtn-run" onclick="loadFromHistory(${i})">▶ Load</button>
+        <button class="hbtn hbtn-del" onclick="deleteItem(${i})">🗑 Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadFromHistory(i){
+  const h=history[i];
+  document.getElementById('codeIn').value=h.code;
+  setLang(h.lang,document.querySelector(`.lang-btn[data-lang="${h.lang}"]`));
+  showView('lab'); tlog(`Loaded saved code (${h.lang.toUpperCase()})`,'tg');
+}
+function deleteItem(i) { history.splice(i, 1); document.getElementById('histCount').textContent=history.length; renderHistory(); }
+function clearHist(){ history=[]; document.getElementById('histCount').textContent='0'; renderHistory(); }
+</script>
+</body>
+</html>
