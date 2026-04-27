@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+
+
+
+[[redirects]]
+  from = "/project module"
+  to = "/project module/thetatrack_v3_fixed_contrast.html"
+  status = 200
+
+
+
